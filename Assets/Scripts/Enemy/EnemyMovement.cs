@@ -1,20 +1,53 @@
 ﻿using UnityEngine;
-using System.Collections;
 using UnityEngine.AI;
 
 public class EnemyMovement : MonoBehaviour
 {
+    [SerializeField] EnemyData enemyData;
+
+    Transform player;
+    PlayerHealth playerHealth;
+    EnemyHealth enemyHealth;
+    NavMeshAgent navMeshAgent;
+
+    //new
+    float elapsed = 0;
+
+    private void Awake()
+    {
+        player = GameObject.FindGameObjectWithTag("Player").transform;
+
+        playerHealth = player.GetComponent < PlayerHealth>();
+        enemyHealth = GetComponent<EnemyHealth>();
+        navMeshAgent = GetComponent<NavMeshAgent>();
+        navMeshAgent.speed = enemyData.movementSpeed;
+    }
+
     void Update ()
     {
-        Transform player = FindObjectOfType<PlayerMovement>().transform;
-
-        if (GetComponent<EnemyHealth>().currentHealth > 0 && player.GetComponent<PlayerHealth>().currentHealth > 0)
+        //dont move if dead
+        if (enemyHealth.currentHealth <= 0 || playerHealth.currentHealth<=0)
         {
-            GetComponent<NavMeshAgent>().SetDestination (player.position);
+            if (navMeshAgent.enabled)
+            {
+                navMeshAgent.isStopped = true;
+            }
+            return;
         }
-        else
+
+        //dont move if disabled
+        if(!navMeshAgent.enabled)
         {
-            GetComponent<NavMeshAgent>().enabled = false;
+            return;
+        }
+
+        elapsed += Time.deltaTime;
+
+        //update periodically
+        if(elapsed>0.2f)
+        {
+            navMeshAgent.SetDestination(player.position);
+            elapsed = 0f;
         }
     }
 }

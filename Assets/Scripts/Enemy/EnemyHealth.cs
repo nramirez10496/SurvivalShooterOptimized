@@ -1,13 +1,10 @@
 ﻿using UnityEngine;
+using System.Collections;
+using UnityEngine.AI;
 
 public class EnemyHealth : MonoBehaviour
 {
-    public int startingHealth = 100;
     public int currentHealth;
-    public float sinkSpeed = 2.5f;
-    public int scoreValue = 10;
-    public AudioClip deathClip;
-
 
     Animator anim;
     AudioSource enemyAudio;
@@ -15,7 +12,16 @@ public class EnemyHealth : MonoBehaviour
     CapsuleCollider capsuleCollider;
     bool isDead;
     bool isSinking;
+    [SerializeField] AudioClip deathClip;
 
+    //new
+    Rigidbody enemyRB;
+    NavMeshAgent navMeshAgent;
+    EnemyPool pool;
+    bool inPool;
+    AudioClip resetDeathClip;
+
+    [SerializeField] EnemyData enemyData;
 
     void Awake ()
     {
@@ -24,18 +30,19 @@ public class EnemyHealth : MonoBehaviour
         hitParticles = GetComponentInChildren <ParticleSystem> ();
         capsuleCollider = GetComponent <CapsuleCollider> ();
 
-        currentHealth = startingHealth;
+        //new
+        enemyRB = GetComponent <Rigidbody> ();
+        navMeshAgent = GetComponent<UnityEngine.AI.NavMeshAgent> ();
+
+        resetDeathClip = enemyAudio.clip;
     }
-
-
     void Update ()
     {
         if(isSinking)
         {
-            transform.Translate (-Vector3.up * sinkSpeed * Time.deltaTime);
+            transform.Translate (-Vector3.up * enemyData.sinkSpeed * Time.deltaTime);
         }
     }
-
 
     public void TakeDamage (int amount, Vector3 hitPoint)
     {
@@ -71,10 +78,66 @@ public class EnemyHealth : MonoBehaviour
 
     public void StartSinking ()
     {
-        GetComponent <UnityEngine.AI.NavMeshAgent> ().enabled = false;
-        GetComponent <Rigidbody> ().isKinematic = true;
+        if(isSinking)
+        {
+            return;
+        }
+        navMeshAgent.enabled = false;
+        enemyRB.isKinematic = true;
         isSinking = true;
-        ScoreManager.score += scoreValue;
-        Destroy (gameObject, 2f);
+        ScoreManager.score += enemyData.scoreValue;
+
+        StartCoroutine(ReturnToPool());
+    }
+
+    private void OnEnable()
+    {
+        ResetEnemy();
+    }
+
+    private void OnDisable()
+    {
+        if (pool != null && !inPool)
+        {
+            inPool = true;
+            pool.AddToQueue(this);
+        }
+    }
+
+    public void SetPool(EnemyPool enemyPool)
+    {
+        pool = enemyPool;
+    }
+
+    public void SetInPool(bool value)
+    {
+        inPool = value;
+    }
+
+    void ResetEnemy()
+    {
+        currentHealth = enemyData.maxHealth;
+        isDead = false;
+        isSinking = false;
+
+        capsuleCollider.isTrigger = false;
+        enemyRB.isKinematic = false;
+        navMeshAgent.enabled = true;
+        navMeshAgent.isStopped = false;
+        navMeshAgent.ResetPath();
+
+        anim.Rebind();
+        anim.Update(0f);
+        enemyAudio.Stop();
+        enemyAudio.clip = resetDeathClip;
+
+        hitParticles.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+    }
+
+    IEnumerator ReturnToPool()
+    {
+        yield return new WaitForSeconds(2f);
+
+        gameObject.SetActive(false);
     }
 }

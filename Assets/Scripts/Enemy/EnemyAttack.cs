@@ -3,10 +3,6 @@ using System.Collections;
 
 public class EnemyAttack : MonoBehaviour
 {
-    public float timeBetweenAttacks = 0.5f;
-    public int attackDamage = 10;
-
-
     Animator anim;
     GameObject player;
     PlayerHealth playerHealth;
@@ -14,7 +10,7 @@ public class EnemyAttack : MonoBehaviour
     bool playerInRange;
     float timer;
 
-
+    [SerializeField] EnemyData enemyData;
     void Awake ()
     {
         player = GameObject.FindGameObjectWithTag ("Player");
@@ -46,7 +42,7 @@ public class EnemyAttack : MonoBehaviour
     {
         timer += Time.deltaTime;
 
-        if(timer >= timeBetweenAttacks && playerInRange && enemyHealth.currentHealth > 0)
+        if(timer >= enemyData.timeBetweenAttacks && playerInRange && enemyHealth.currentHealth > 0)
         {
             Attack ();
         }
@@ -64,7 +60,13 @@ public class EnemyAttack : MonoBehaviour
 
         if(playerHealth.currentHealth > 0)
         {
-            playerHealth.TakeDamage (attackDamage);
+            playerHealth.TakeDamage (enemyData.attackDamage);
         }
+    }
+
+    private void OnEnable()
+    {
+        playerInRange = false ;
+        timer= 0f;
     }
 }
