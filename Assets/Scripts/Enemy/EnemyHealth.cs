@@ -22,6 +22,8 @@ public class EnemyHealth : MonoBehaviour
     AudioClip resetDeathClip;
 
     [SerializeField] EnemyData enemyData;
+    int id_dead = Animator.StringToHash("Dead");
+    Transform cTransform;
 
     void Awake ()
     {
@@ -35,12 +37,13 @@ public class EnemyHealth : MonoBehaviour
         navMeshAgent = GetComponent<UnityEngine.AI.NavMeshAgent> ();
 
         resetDeathClip = enemyAudio.clip;
+        cTransform = transform;
     }
     void Update ()
     {
         if(isSinking)
         {
-            transform.Translate (-Vector3.up * enemyData.sinkSpeed * Time.deltaTime);
+            cTransform.Translate (-Vector3.up * enemyData.sinkSpeed * Time.deltaTime);
         }
     }
 
@@ -69,7 +72,7 @@ public class EnemyHealth : MonoBehaviour
 
         capsuleCollider.isTrigger = true;
 
-        anim.SetTrigger ("Dead");
+        anim.SetTrigger (id_dead);
 
         enemyAudio.clip = deathClip;
         enemyAudio.Play ();
@@ -85,7 +88,7 @@ public class EnemyHealth : MonoBehaviour
         navMeshAgent.enabled = false;
         enemyRB.isKinematic = true;
         isSinking = true;
-        ScoreManager.score += enemyData.scoreValue;
+        ScoreManager.AddScore(enemyData.scoreValue);
 
         StartCoroutine(ReturnToPool());
     }

@@ -21,6 +21,8 @@ public class PlayerShooting : MonoBehaviour
 
     //new 
     bool isFiring;
+    Transform cTransform;
+
 
     void Awake () 
     { 
@@ -28,7 +30,8 @@ public class PlayerShooting : MonoBehaviour
         gunParticles = GetComponent<ParticleSystem> (); 
         gunLine = GetComponent <LineRenderer> (); 
         gunAudio = GetComponent<AudioSource> (); 
-        gunLight = GetComponent<Light> (); 
+        gunLight = GetComponent<Light> ();
+        cTransform = transform;
     } 
     
 
@@ -67,10 +70,10 @@ public class PlayerShooting : MonoBehaviour
         gunParticles.Play (); 
         
         gunLine.enabled = true; 
-        gunLine.SetPosition (0, transform.position); 
+        gunLine.SetPosition (0, cTransform.position); 
         
-        shootRay.origin = transform.position; 
-        shootRay.direction = transform.forward; 
+        shootRay.origin = cTransform.position; 
+        shootRay.direction = cTransform.forward; 
         
         if(Physics.Raycast (shootRay, out shootHit, range, shootableMask)) 
         { 

@@ -1,23 +1,22 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
+using System;
 
 public class ScoreManager : MonoBehaviour
 {
-    public static int score;
-
-
-    [SerializeField] Text text;
-
+    public static int score { get; private set;}
+    public static event Action<int> OnScoreChanged;
 
     void Awake ()
     {
         score = 0;
+        OnScoreChanged?.Invoke(score);
     }
-
-
-    void Update ()
+    
+    public static void AddScore(int amount)
     {
-        text.text = "Score: " + score;
+        score += amount;
+        OnScoreChanged?.Invoke(score);
     }
 }

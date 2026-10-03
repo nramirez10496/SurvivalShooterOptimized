@@ -14,12 +14,18 @@ public class PlayerMovement : MonoBehaviour
     //new 
     Vector2 moveInput;
     Vector2 aimInput;
-    
+    int id_iswalking = Animator.StringToHash("IsWalking");
+    Camera mainCamera;
+    Transform cTransform;
+
+
     void Awake() 
     { 
         floorMask = LayerMask.GetMask("Floor"); 
         anim = GetComponent<Animator>(); 
         playerRigidbody = GetComponent<Rigidbody>(); 
+        mainCamera=Camera.main;
+        cTransform = transform;
     } 
 
     void FixedUpdate() 
@@ -37,17 +43,17 @@ public class PlayerMovement : MonoBehaviour
         movement.Set(h, 0f, v); 
         movement = movement.normalized * speed * Time.fixedDeltaTime; 
         
-        playerRigidbody.MovePosition(transform.position + movement); 
+        playerRigidbody.MovePosition(cTransform.position + movement); 
     } 
 
     void Turning() 
     { 
-        Ray camRay = Camera.main.ScreenPointToRay(aimInput); 
+        Ray camRay = mainCamera.ScreenPointToRay(aimInput); 
         RaycastHit floorHit; 
         
         if (Physics.Raycast(camRay, out floorHit, camRayLength, floorMask)) 
         { 
-            Vector3 playerToMouse = floorHit.point - transform.position; 
+            Vector3 playerToMouse = floorHit.point - cTransform.position; 
             playerToMouse.y = 0f;
 
             if (playerToMouse.sqrMagnitude > 0.001f)
@@ -62,7 +68,7 @@ public class PlayerMovement : MonoBehaviour
     { 
         bool walking = h != 0f || v != 0f; 
 
-        anim.SetBool("IsWalking", walking); 
+        anim.SetBool(id_iswalking, walking); 
     } 
 
     public void OnMove(InputAction.CallbackContext ctx)

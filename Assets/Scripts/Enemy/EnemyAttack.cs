@@ -11,12 +11,17 @@ public class EnemyAttack : MonoBehaviour
     float timer;
 
     [SerializeField] EnemyData enemyData;
+    int id_playerdead = Animator.StringToHash("PlayerDead");
+    Transform playerTransform;
+
     void Awake ()
     {
         player = GameObject.FindGameObjectWithTag ("Player");
         playerHealth = player.GetComponent <PlayerHealth> ();
         enemyHealth = GetComponent<EnemyHealth>();
         anim = GetComponent <Animator> ();
+
+        playerTransform = player.transform;
     }
 
 
@@ -49,7 +54,7 @@ public class EnemyAttack : MonoBehaviour
 
         if(playerHealth.currentHealth <= 0)
         {
-            anim.SetTrigger ("PlayerDead");
+            anim.SetTrigger (id_playerdead);
         }
     }
 
